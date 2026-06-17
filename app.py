@@ -14,6 +14,11 @@ from fitting  import fit_condition, read_data_file
 from plotting import (build_figure, MARKER_SYMBOLS, LINE_STYLES,
                       FONT_FAMILIES, GRID_DASHES, hex_to_rgba)
 
+# ── Upload limits ──────────────────────────────────────────────────────────────
+MAX_FILE_MB = 10
+MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024
+MAX_ROWS = 50_000
+
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title=__app_name__,
@@ -183,6 +188,13 @@ with st.sidebar:
         st.markdown('<div class="section-header">Condition Settings</div>',
                     unsafe_allow_html=True)
         for i, f in enumerate(uploaded_files):
+            size_mb = f.size / (1024 * 1024)
+            if size_mb > MAX_FILE_MB:
+                st.warning(
+                    f"⚠️ **{f.name}** skipped — "
+                    f"{size_mb:.1f} MB exceeds the {MAX_FILE_MB} MB limit."
+                )
+                continue
             default_color = pal_colors[i % len(pal_colors)]
             with st.expander(f"📄 {f.name}", expanded=True):
                 label    = st.text_input("Condition name",
@@ -308,6 +320,15 @@ if run_btn:
             df = read_data_file(cfg["file"])
         else:
             df = cfg["df"]
+
+        if len(df) > MAX_ROWS:
+            st.error(
+                f"⚠️ **{cfg['label']}** has {len(df):,} rows — "
+                f"maximum allowed is {MAX_ROWS:,}. Skipping."
+            )
+            prog.progress((i + 1) / len(all_srcs))
+            continue
+
         per_rep_df, summary_df, fu_matrix, T = fit_condition(
             df, temp_col=cfg["temp_col"], n_baseline_pts=n_baseline,
         )
@@ -895,3 +916,14 @@ One CSV or Excel file per condition (wild-type, mutant, ±ligand, etc.):
 - Replicate columns can have any name
 - Upload one file per condition, or paste data via the manual entry panel
         """)
+
+# ── Privacy notice (always visible at bottom) ──────────────────────────────────
+st.divider()
+st.caption(
+    "🔒 **Data privacy:** Files uploaded to this app transit and are processed on "
+    "Streamlit's servers (hosted on AWS). Streamlit encrypts data in transit (TLS) "
+    "and at rest (AES-256), but this app makes no guarantees about server-side "
+    "logging or retention. Files are limited to 10 MB and 50,000 rows. "
+    "See the [Streamlit Trust & Security page](https://docs.streamlit.io/deploy/streamlit-community-cloud/get-started/trust-and-security) "
+    "and [Snowflake Privacy Notice](https://www.snowflake.com/en/legal/privacy/privacy-policy/) for details."
+)
