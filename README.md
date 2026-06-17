@@ -1,5 +1,5 @@
 # CD Thermal Denaturation Analyzer
-**Version 1.1.0**
+**Version 1.1.1**
 
 A Streamlit web app for fitting circular dichroism thermal denaturation data
 to a two-state unfolding model with sloping baselines.
