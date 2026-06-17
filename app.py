@@ -3,6 +3,7 @@ CD Thermal Denaturation Analyzer
 Streamlit app · Two-state Van't Hoff model · Sloping baselines
 """
 
+import kaleido
 import numpy as np
 import pandas as pd
 import seaborn as sns
