@@ -2,7 +2,7 @@
 **Version 1.1.0**
 
 A Streamlit web app for fitting circular dichroism thermal denaturation data
-to a two-state unfolding model with sloping baselines.
+to a two-state unfolding model with sloping baselines. Code developed with assistance from Claude AI.
 
 ---
 
