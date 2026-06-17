@@ -3,7 +3,6 @@ CD Thermal Denaturation Analyzer
 Streamlit app · Two-state Van't Hoff model · Sloping baselines
 """
 
-import kaleido
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -409,8 +408,8 @@ if st.session_state.fit_done and conditions:
         tv = THEMES[theme_name]
         tk = f"{pk}_{theme_name}"      # combined key suffix for color pickers
 
-        # ── 1. Canvas & Layout ────────────────────────────────────────────────
-        with st.expander("📐  Canvas & Layout", expanded=False):
+        # ── 1. Canvas, Layout, and Export ────────────────────────────────────────────────
+        with st.expander("📐  Canvas, Layout, and Export", expanded=False):
 
             # Unit selector
             default_unit = pv("unit", "px")
@@ -479,6 +478,14 @@ if st.session_state.fit_done and conditions:
                 options=[1, 2, 3], value=pv("export_scale", 2),
                 format_func=lambda x: f"{x}×  (≈{96*x} dpi effective)",
                 key=f"escale_{pk}",
+            )
+
+            export_format = st.selectbox(
+                    "Export format (Camera icon)",
+                    options=["png", "svg", "jpeg", "webp"],
+                    index=0,
+                    help="Sets the file type downloaded when clicking the Camera icon on the chart toolbar. "
+                        "Choose SVG for editable, infinitely scalable vector graphics (perfect for PowerPoint or Illustrator)."
             )
 
             # Margins
@@ -721,8 +728,27 @@ if st.session_state.fit_done and conditions:
     # ══════════════════════════════════════════════════════════════════════════
     with tab_analysis:
 
+        # Configure the frontend camera button using your UI inputs
+        plotly_config = {
+            'toImageButtonOptions': {
+                'format': export_format, # Dynamically uses selection (png, svg, jpeg, webp)
+                'filename': plot_title_text if plot_title_text else 'cd_denaturation_analysis',
+                'height': fig_height_px if not fill_container else 600,
+                'width': fig_width_px if not fill_container else 900,
+                'scale': export_scale # Dynamically uses your 1x, 2x, 3x resolution slider!
+            },
+            'displaylogo': False,  # Hides the distracting Plotly logo from the toolbar
+            'modeBarButtonsToRemove': ['lasso2d', 'select2d'] # Cleans up unnecessary tool clutter
+        }
+
         # ── Chart ─────────────────────────────────────────────────────────────
-        st.plotly_chart(fig, use_container_width=fill_container)
+        st.plotly_chart(fig, use_container_width=fill_container, config=plotly_config)
+
+        # A user-friendly caption instructing them how to download
+        st.caption(
+            f"💡 **Export Tip:** Hover over the top-right of the chart and click the **Camera Icon (📷)** "
+            f"to instantly download your figure as a **{export_format.upper()}** at your custom dimensions."
+        )
 
         # ── Fitting equations ──────────────────────────────────────────────────
         with st.expander("📐  Fitting Equations", expanded=False):
@@ -752,31 +778,6 @@ if st.session_state.fit_done and conditions:
                 unsafe_allow_html=True,
             )
             st.markdown("</div>", unsafe_allow_html=True)
-
-        # ── Download figure ────────────────────────────────────────────────────
-        st.markdown("##### ⬇ Download Figure")
-        exp_w = fig_width_px or 1200
-        st.caption(
-            f"Export: {exp_w * export_scale} × {fig_height_px * export_scale} px "
-            f"at {export_scale}× scale (≈{96*export_scale} dpi effective)"
-        )
-        pd1, pd2, pd3 = st.columns(3)
-        for fmt, col, mime in [
-            ("png", pd1, "image/png"),
-            ("pdf", pd2, "application/pdf"),
-            ("svg", pd3, "image/svg+xml"),
-        ]:
-            try:
-                kw = dict(format=fmt, width=exp_w, height=fig_height_px)
-                if fmt == "png":
-                    kw["scale"] = export_scale
-                img = pio.to_image(fig, **kw)
-                col.download_button(f"⬇ {fmt.upper()}", data=img,
-                                    file_name=f"cd_denaturation.{fmt}", mime=mime)
-            except Exception:
-                col.caption(f"`pip install kaleido` for {fmt.upper()} export")
-
-        st.divider()
 
         # ── Per-condition results ──────────────────────────────────────────────
         display_cols = ["Replicate", "Tm (°C)", "ΔH (kJ/mol)",
