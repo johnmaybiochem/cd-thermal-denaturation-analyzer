@@ -1,5 +1,5 @@
 # CD Thermal Denaturation Analyzer
-**Version 1.1.1**
+**Version 1.2.0**
 
 A Streamlit web app for fitting circular dichroism thermal denaturation data
 to a two-state unfolding model with sloping baselines.
@@ -132,6 +132,7 @@ Share your machine's local IP (e.g. `http://192.168.1.x:8501`).
 
 | Version | Notes |
 |---------|-------|
+| 1.2.0   | Added 3-state model fitting and plotting, removed error bar caps if no replicates, added option to plot raw data without fitting to assess whether data looks two-state (single sigmoidal) or three-state (shoulder or two distinct transitions) |
 | 1.1.1   | Updated figure download options and removed kaleido requirement for download |
 | 1.1.0   | Figure presets (Publication/Poster/PowerPoint), in/cm units, version tracking, denaturation curve sidebar illustration |
 | 1.0.0   | Initial release |
