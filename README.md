@@ -169,7 +169,6 @@ message: "If you use this software, please cite it."
 authors:
   - family-names: May
     given-names: John
-    orcid: https://orcid.org/0000-0000-0000-0000
 title: "CD Thermal Denaturation Analyzer"
 version: 1.2.0
 date-released: 2026-06-23
